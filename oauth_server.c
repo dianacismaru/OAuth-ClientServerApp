@@ -5,17 +5,30 @@
  */
 
 #include "oauth.h"
+#include <stdio.h>
+#include "server_data.h"
 
 AuthResponse *
 request_authorization_1_svc(AuthRequest *argp, struct svc_req *rqstp)
 {
-	static AuthResponse  result;
+	static AuthResponse res;
+    memset(&res, 0, sizeof(res));
+    printf("Server received user_id: %s\n", argp->user_id);
 
-	/*
-	 * insert server code here
-	 */
-
-	return &result;
+	if (server_data.users.find(argp->user_id) != server_data.users.end()) {
+		res.status = NONE;
+		res.auth_token = (char*)malloc(32);
+		if (res.auth_token != NULL) {
+			strcpy(res.auth_token, "valid_auth_token");
+			printf("Server generated auth token: %s\n", res.auth_token);
+		} else {
+			printf("Server failed to allocate memory for auth token\n");
+		}
+	} else {
+		res.status = USER_NOT_FOUND;
+		printf("Server did not find user: %s\n", argp->user_id);
+	}
+    return &res;
 }
 
 AccessResponse *

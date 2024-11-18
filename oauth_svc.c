@@ -11,10 +11,13 @@
 #include <memory.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include "server_data.h"
 
 #ifndef SIG_PF
 #define SIG_PF void(*)(int)
 #endif
+
+ServerData server_data;
 
 static void
 oauth_prog_1(struct svc_req *rqstp, register SVCXPRT *transp)
@@ -74,6 +77,10 @@ oauth_prog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 int
 main (int argc, char **argv)
 {
+	server_data.loadUsers(argv[1]);
+	server_data.loadResources(argv[2]);
+	server_data.loadApprovals(argv[3]);
+
 	register SVCXPRT *transp;
 
 	pmap_unset (OAUTH_PROG, OAUTH_VERS);

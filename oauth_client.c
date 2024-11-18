@@ -5,10 +5,10 @@
  */
 
 #include "oauth.h"
-
+#include "client_data.h"
 
 void
-oauth_prog_1(char *host)
+oauth_prog_1(char *host, char *filename)
 {
 	CLIENT *clnt;
 	AuthResponse  *result_1;
@@ -19,25 +19,83 @@ oauth_prog_1(char *host)
 	ActionRequest  validate_action_1_arg;
 
 #ifndef	DEBUG
-	clnt = clnt_create (host, OAUTH_PROG, OAUTH_VERS, "udp");
+	clnt = clnt_create (host, OAUTH_PROG, OAUTH_VERS, "tcp");
 	if (clnt == NULL) {
 		clnt_pcreateerror (host);
 		exit (1);
 	}
 #endif	/* DEBUG */
+	ClientData client_data;
+    client_data.loadRequests(filename);
 
-	result_1 = request_authorization_1(&request_authorization_1_arg, clnt);
-	if (result_1 == (AuthResponse *) NULL) {
-		clnt_perror (clnt, "call failed");
-	}
-	result_2 = request_access_token_1(&request_access_token_1_arg, clnt);
-	if (result_2 == (AccessResponse *) NULL) {
-		clnt_perror (clnt, "call failed");
-	}
-	result_3 = validate_action_1(&validate_action_1_arg, clnt);
-	if (result_3 == (ErrorCode *) NULL) {
-		clnt_perror (clnt, "call failed");
-	}
+	for (const auto &request : client_data.requests) {
+		string userId = get<0>(request);
+        string action = get<1>(request);
+        string resource = get<2>(request);
+
+        printf("user: %s, action: %s, resource/refresh: %s\n",
+               userId.c_str(),
+               action.c_str(),
+               resource.c_str());
+
+		if (action == "REQUEST") {
+			memset(&request_authorization_1_arg, 0, sizeof(request_authorization_1_arg));
+			request_authorization_1_arg.user_id = (char *)malloc(16 * sizeof(char));
+			if (request_authorization_1_arg.user_id == NULL) {
+				printf("Failed to allocate memory for user_id\n");
+				exit(1);
+			}
+			strcpy(request_authorization_1_arg.user_id, userId.c_str());
+			printf("user_id set to: %s\n", request_authorization_1_arg.user_id);
+
+			result_1 = request_authorization_1(&request_authorization_1_arg, clnt);
+			if (result_1 == (AuthResponse *) NULL) {
+				clnt_perror (clnt, "call failed");
+				printf("Failed to get a valid response from the server\n");
+			} else {
+				printf("Received response from server\n");
+				printf("Status: %d\n", result_1->status);
+				if (result_1->auth_token != NULL) {
+					printf("Auth token: %s\n", result_1->auth_token);
+				} else {
+					printf("Auth token is NULL\n");
+				}
+			}
+
+			// auto [authError, authorizationToken] = authServer.requestAuthorization(userId);
+
+			// if (authError != ErrorCode::NONE) {
+			// 	handleError(authError);
+			// 	continue;
+			// }
+
+			// auto [accessError, accessToken] = authServer.requestAccessToken(userId, approvalDb);
+			// if (accessError != ErrorCode::NONE || accessError != ErrorCode::PERMISSION_GRANTED) {
+			// 	handleError(accessError);
+			// 	continue;
+			// }
+			
+			// if (resource == "1") {
+				// auto [refreshError, refreshToken] = authServer.requestRefreshToken(userId);
+			// }
+		} else {
+			// make action
+			// decrease availability
+			// auto err = resourceServer.validateAction(userId, action, resource);
+			// handleError(err);
+
+		}
+    }
+
+	// result_2 = request_access_token_1(&request_access_token_1_arg, clnt);
+	// if (result_2 == (AccessResponse *) NULL) {
+	// 	clnt_perror (clnt, "call failed");
+	// }
+
+	// result_3 = validate_action_1(&validate_action_1_arg, clnt);
+	// if (result_3 == (ErrorCode *) NULL) {
+	// 	clnt_perror (clnt, "call failed");
+	// }
 #ifndef	DEBUG
 	clnt_destroy (clnt);
 #endif	 /* DEBUG */
@@ -54,6 +112,6 @@ main (int argc, char *argv[])
 		exit (1);
 	}
 	host = argv[1];
-	oauth_prog_1 (host);
+	oauth_prog_1 (host, argv[2]);
 exit (0);
 }
