@@ -12,39 +12,39 @@ void ClientData::loadRequests(const string& filename) {
         getline(ss, resource, ',');
         requests.emplace_back(userId, action, resource);
     }
-    clog << "[INFO] Finished loading requests db" << endl;
 
     file.close();
 }
 
-// void handleError(ErrorCode error) {
-//     switch (error) {
-//         case ErrorCode::USER_NOT_FOUND:
-//             clog << "[CLIENT.OUT] USER_NOT_FOUND" << endl;
-//             break;
-//         case ErrorCode::RESOURCE_NOT_FOUND:
-//             clog << "[CLIENT.OUT] RESOURCE_NOT_FOUND" << endl;
-//             break;
-//         case ErrorCode::PERMISSION_GRANTED:
-//             clog << "[CLIENT.OUT] PERMISSION_GRANTED" << endl;
-//             break;
-//         case ErrorCode::OPERATION_NOT_PERMITTED:
-//             clog << "[CLIENT.OUT] OPERATION_NOT_PERMITTED" << endl;
-//             break;
-//         case ErrorCode::REQUEST_DENIED:
-//             clog << "[CLIENT.OUT] REQUEST_DENIED" << endl;
-//             break;
-//         case ErrorCode::PERMISSION_DENIED:
-//             clog << "[CLIENT.OUT] PERMISSION_DENIED" << endl;
-//             break;
-//         case ErrorCode::TOKEN_EXPIRED:
-//             clog << "[CLIENT.OUT] TOKEN_EXPIRED" << endl;
-//             break;
-//         case ErrorCode::NONE:
-//             break;
-//         default:
-//             clog << "[WARN] UNKNOWN ERROR" << endl;
-//             break;
-//     }
-// }
+void ClientData::handleError(ErrorCode error) {
+    switch (error) {
+        case ErrorCode::USER_NOT_FOUND:
+            printf("USER_NOT_FOUND\n");
+            break;
+        case ErrorCode::RESOURCE_NOT_FOUND:
+            printf("RESOURCE_NOT_FOUND\n");
+            break;
+        case ErrorCode::PERMISSION_GRANTED:
+            printf("PERMISSION_GRANTED\n");
+            break;
+        case ErrorCode::OPERATION_NOT_PERMITTED:
+            printf("OPERATION_NOT_PERMITTED\n");
+            break;
+        case ErrorCode::REQUEST_DENIED:
+            printf("REQUEST_DENIED\n");
+            break;
+        case ErrorCode::PERMISSION_DENIED:
+            printf("PERMISSION_DENIED\n");
+            break;
+        case ErrorCode::TOKEN_EXPIRED:
+            printf("TOKEN_EXPIRED\n");
+            break;
+        case ErrorCode::NONE:
+            break;
+        default:
+            printf("UNKNOWN_ERROR\n");
+            break;
+    }
+    fflush(stdout);
+}
 

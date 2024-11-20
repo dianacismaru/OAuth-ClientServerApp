@@ -11,6 +11,7 @@
 #include <memory.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+
 #include "server_data.h"
 
 #ifndef SIG_PF
@@ -77,9 +78,16 @@ oauth_prog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 int
 main (int argc, char **argv)
 {
+	if (argc < 5) {
+		fprintf (stderr, "usage: %s <user_db> <resource_db> <approval_db> <max_validity>\n", argv[0]);
+		exit (1);
+	}
+
+	// Load data needed for the server
 	server_data.loadUsers(argv[1]);
 	server_data.loadResources(argv[2]);
 	server_data.loadApprovals(argv[3]);
+	server_data.setMaxValidity(atoi(argv[4]));
 
 	register SVCXPRT *transp;
 

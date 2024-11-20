@@ -33,69 +33,60 @@ oauth_prog_1(char *host, char *filename)
         string action = get<1>(request);
         string resource = get<2>(request);
 
-        printf("user: %s, action: %s, resource/refresh: %s\n",
-               userId.c_str(),
-               action.c_str(),
-               resource.c_str());
+        // printf("\n%s, %s, %s\n",
+        //        userId.c_str(),
+        //        action.c_str(),
+        //        resource.c_str());
 
 		if (action == "REQUEST") {
 			memset(&request_authorization_1_arg, 0, sizeof(request_authorization_1_arg));
-			request_authorization_1_arg.user_id = (char *)malloc(16 * sizeof(char));
-			if (request_authorization_1_arg.user_id == NULL) {
-				printf("Failed to allocate memory for user_id\n");
-				exit(1);
-			}
-			strcpy(request_authorization_1_arg.user_id, userId.c_str());
-			printf("user_id set to: %s\n", request_authorization_1_arg.user_id);
-
+			request_authorization_1_arg.user_id = strdup(userId.c_str());
 			result_1 = request_authorization_1(&request_authorization_1_arg, clnt);
 			if (result_1 == (AuthResponse *) NULL) {
-				clnt_perror (clnt, "call failed");
-				printf("Failed to get a valid response from the server\n");
+				clnt_perror (clnt, "authz call failed");
 			} else {
-				printf("Received response from server\n");
-				printf("Status: %d\n", result_1->status);
-				if (result_1->auth_token != NULL) {
-					printf("Auth token: %s\n", result_1->auth_token);
+				client_data.handleError(result_1->status);
+				if (!strcmp(result_1->auth_token, "")) {
+					continue;
+				}
+
+				memset(&request_access_token_1_arg, 0, sizeof(request_access_token_1_arg));
+				request_access_token_1_arg.user_id = strdup(userId.c_str());
+				request_access_token_1_arg.auth_token = strdup(result_1->auth_token);
+
+				result_2 = request_access_token_1(&request_access_token_1_arg, clnt);
+				if (result_2 == (AccessResponse *) NULL) {
+					clnt_perror (clnt, "access call failed");
 				} else {
-					printf("Auth token is NULL\n");
+					client_data.handleError(result_2->status);
+					if (!strcmp(result_2->access_token, "")) {
+						continue;
+					}
+
+					printf("%s -> %s\n", result_1->auth_token, result_2->access_token);
+					fflush(stdout);
+
+					if (resource == "1") {
+						// request refresh token
+					}
 				}
 			}
-
-			// auto [authError, authorizationToken] = authServer.requestAuthorization(userId);
-
-			// if (authError != ErrorCode::NONE) {
-			// 	handleError(authError);
-			// 	continue;
-			// }
-
-			// auto [accessError, accessToken] = authServer.requestAccessToken(userId, approvalDb);
-			// if (accessError != ErrorCode::NONE || accessError != ErrorCode::PERMISSION_GRANTED) {
-			// 	handleError(accessError);
-			// 	continue;
-			// }
-			
-			// if (resource == "1") {
-				// auto [refreshError, refreshToken] = authServer.requestRefreshToken(userId);
-			// }
 		} else {
-			// make action
-			// decrease availability
-			// auto err = resourceServer.validateAction(userId, action, resource);
-			// handleError(err);
+			// make action and decrease availability
+			memset(&validate_action_1_arg, 0, sizeof(validate_action_1_arg));
+			validate_action_1_arg.user_id = strdup(userId.c_str());
+			validate_action_1_arg.action = strdup(action.c_str());
+			validate_action_1_arg.resource = strdup(resource.c_str());
 
+			result_3 = validate_action_1(&validate_action_1_arg, clnt);
+			if (result_3 == (ErrorCode *) NULL) {
+				clnt_perror (clnt, "validate action call failed");
+			} else {
+				client_data.handleError(*result_3);
+			}
 		}
     }
 
-	// result_2 = request_access_token_1(&request_access_token_1_arg, clnt);
-	// if (result_2 == (AccessResponse *) NULL) {
-	// 	clnt_perror (clnt, "call failed");
-	// }
-
-	// result_3 = validate_action_1(&validate_action_1_arg, clnt);
-	// if (result_3 == (ErrorCode *) NULL) {
-	// 	clnt_perror (clnt, "call failed");
-	// }
 #ifndef	DEBUG
 	clnt_destroy (clnt);
 #endif	 /* DEBUG */
