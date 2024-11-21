@@ -14,7 +14,7 @@ LDLIBS += -lnsl -ltirpc
 
 # Targets
 
-all: $(CLIENT) $(SERVER)
+build: $(CLIENT) $(SERVER)
 
 $(CLIENT): $(OBJECTS_CLNT)
 	$(CXX) -o $(CLIENT) $(OBJECTS_CLNT) $(LDLIBS)
@@ -41,4 +41,4 @@ oauth_xdr.o: oauth_xdr.c oauth.h
 	$(CXX) $(CXXFLAGS) -c oauth_xdr.c -o oauth_xdr.o
 
 clean:
-	$(RM) core $(OBJECTS_CLNT) $(OBJECTS_SVC) $(CLIENT) $(SERVER)
+	$(RM) $(OBJECTS_CLNT) $(OBJECTS_SVC) $(CLIENT) $(SERVER) *.out
