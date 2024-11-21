@@ -27,6 +27,7 @@ oauth_prog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 		AuthRequest request_authorization_1_arg;
 		AccessRequest request_access_token_1_arg;
 		ActionRequest validate_action_1_arg;
+		AuthRequest refresh_tokens_1_arg;
 	} argument;
 	char *result;
 	xdrproc_t _xdr_argument, _xdr_result;
@@ -53,6 +54,12 @@ oauth_prog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 		_xdr_argument = (xdrproc_t) xdr_ActionRequest;
 		_xdr_result = (xdrproc_t) xdr_ErrorCode;
 		local = (char *(*)(char *, struct svc_req *)) validate_action_1_svc;
+		break;
+
+	case refresh_tokens:
+		_xdr_argument = (xdrproc_t) xdr_AuthRequest;
+		_xdr_result = (xdrproc_t) xdr_ErrorCode;
+		local = (char *(*)(char *, struct svc_req *)) refresh_tokens_1_svc;
 		break;
 
 	default:

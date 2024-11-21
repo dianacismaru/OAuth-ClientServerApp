@@ -52,7 +52,7 @@ request_access_token_1_svc(AccessRequest *argp, struct svc_req *rqstp)
 		result.access_token = (char*)malloc(1);
 		result.refresh_token = (char*)malloc(1);
 		result.ttl = -1;
-		if (result.access_token != NULL) {
+		if (result.access_token && result.refresh_token) {
 			result.access_token[0] = '\0';
 			result.refresh_token[0] = '\0';
 		} else {
@@ -143,5 +143,37 @@ validate_action_1_svc(ActionRequest *argp, struct svc_req *rqstp)
 	printf("PERMIT (%s,%s,%s,%d)\n", argp->action, argp->resource, accessToken, ttl);
 	fflush(stdout);
 	result = PERMISSION_GRANTED;
+	return &result;
+}
+
+
+ErrorCode *
+refresh_tokens_1_svc(AuthRequest *argp, struct svc_req *rqstp)
+{
+	static ErrorCode  result;
+	memset(&result, 0, sizeof(result));
+	printf("BEGIN %s AUTHZ REFRESH\n", argp->user_id);
+
+	char *new_access_token = generate_access_token(server_data.usersData[argp->user_id].refreshToken);
+	if (new_access_token) {
+		printf("  AccessToken = %s\n", new_access_token);
+		fflush(stdout);
+		server_data.usersData[argp->user_id].accessToken = new_access_token;
+		server_data.usersData[argp->user_id].ttl = server_data.maxValidity;
+	} else {
+		fprintf(stderr, "[ERR] Server failed to allocate memory for auth_token\n");
+	}
+
+	// Generate refresh token
+	char *new_refresh_token = generate_access_token(new_access_token);
+	if (new_refresh_token) {
+		printf("  RefreshToken = %s\n", new_refresh_token);
+		fflush(stdout);
+		server_data.usersData[argp->user_id].refreshToken = new_refresh_token;
+	} else {
+		fprintf(stderr, "[ERR] Server failed to allocate memory for refresh_token\n");
+	}
+
+	result = NONE;
 	return &result;
 }

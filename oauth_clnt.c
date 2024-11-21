@@ -53,3 +53,18 @@ validate_action_1(ActionRequest *argp, CLIENT *clnt)
 	}
 	return (&clnt_res);
 }
+
+ErrorCode *
+refresh_tokens_1(AuthRequest *argp, CLIENT *clnt)
+{
+	static ErrorCode clnt_res;
+
+	memset((char *)&clnt_res, 0, sizeof(clnt_res));
+	if (clnt_call (clnt, refresh_tokens,
+		(xdrproc_t) xdr_AuthRequest, (caddr_t) argp,
+		(xdrproc_t) xdr_ErrorCode, (caddr_t) &clnt_res,
+		TIMEOUT) != RPC_SUCCESS) {
+		return (NULL);
+	}
+	return (&clnt_res);
+}

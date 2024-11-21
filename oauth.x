@@ -43,5 +43,6 @@ program OAUTH_PROG {
         AuthResponse request_authorization(AuthRequest) = 1;
         AccessResponse request_access_token(AccessRequest) = 2;
         ErrorCode validate_action(ActionRequest) = 3;
+        ErrorCode refresh_tokens(AuthRequest) = 4;
     } = 1;
 } = 0x20000001;

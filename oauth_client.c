@@ -17,6 +17,8 @@ oauth_prog_1(char *host, char *filename)
 	AccessRequest  request_access_token_1_arg;
 	ErrorCode  *result_3;
 	ActionRequest  validate_action_1_arg;
+	ErrorCode  *result_4;
+	AuthRequest  refresh_tokens_1_arg;
 
 #ifndef	DEBUG
 	clnt = clnt_create (host, OAUTH_PROG, OAUTH_VERS, "tcp");
@@ -64,8 +66,13 @@ oauth_prog_1(char *host, char *filename)
 						continue;
 					}
 
-					printf("%s -> %s\n", result_1->auth_token, result_2->access_token);
-					fflush(stdout);
+					if (resource == "0") {
+						printf("%s -> %s\n", result_1->auth_token, result_2->access_token);
+						fflush(stdout);
+					} else {
+						printf("%s -> %s,%s\n", result_1->auth_token, result_2->access_token, result_2->refresh_token);
+						fflush(stdout);
+					}
 				}
 			}
 		} else {
@@ -83,7 +90,23 @@ oauth_prog_1(char *host, char *filename)
 					client_data.handleError(*result_3);
 				} else {
 					// call refresh token and then retry validate action
-					printf("SHOULD_REFRESH\n");
+					memset(&refresh_tokens_1_arg, 0, sizeof(refresh_tokens_1_arg));
+					refresh_tokens_1_arg.user_id = strdup(userId.c_str());
+					result_4 = refresh_tokens_1(&refresh_tokens_1_arg, clnt);
+					if (result_4 == (ErrorCode *) NULL) {
+						clnt_perror (clnt, "refresh token call failed");
+					} else {
+						client_data.handleError(*result_4);
+						if (*result_4 == ErrorCode::NONE) {
+							result_3 = validate_action_1(&validate_action_1_arg, clnt);
+							if (result_3 == (ErrorCode *) NULL) {
+								clnt_perror (clnt, "validate action call failed");
+							} else {
+								client_data.handleError(*result_3);
+							}
+						}
+					}
+
 				}
 			}
 		}

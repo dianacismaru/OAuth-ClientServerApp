@@ -73,6 +73,9 @@ extern  AccessResponse * request_access_token_1_svc(AccessRequest *, struct svc_
 #define validate_action 3
 extern  ErrorCode * validate_action_1(ActionRequest *, CLIENT *);
 extern  ErrorCode * validate_action_1_svc(ActionRequest *, struct svc_req *);
+#define refresh_tokens 4
+extern  ErrorCode * refresh_tokens_1(AuthRequest *, CLIENT *);
+extern  ErrorCode * refresh_tokens_1_svc(AuthRequest *, struct svc_req *);
 extern int oauth_prog_1_freeresult (SVCXPRT *, xdrproc_t, caddr_t);
 
 #else /* K&R C */
@@ -85,6 +88,9 @@ extern  AccessResponse * request_access_token_1_svc();
 #define validate_action 3
 extern  ErrorCode * validate_action_1();
 extern  ErrorCode * validate_action_1_svc();
+#define refresh_tokens 4
+extern  ErrorCode * refresh_tokens_1();
+extern  ErrorCode * refresh_tokens_1_svc();
 extern int oauth_prog_1_freeresult ();
 #endif /* K&R C */
 
