@@ -91,24 +91,27 @@ oauth_prog_1(char *host, char *filename)
 
 			if (*result_3 != ErrorCode::SHOULD_REFRESH) {
 				client_data.handleError(*result_3);
-			} else {
-				// call refresh token and then retry validate action
-				memset(&refresh_tokens_1_arg, 0, sizeof(refresh_tokens_1_arg));
-				refresh_tokens_1_arg.user_id = strdup(userId.c_str());
-				result_4 = refresh_tokens_1(&refresh_tokens_1_arg, clnt);
-				if (result_4 == (ErrorCode *) NULL) {
-					clnt_perror (clnt, "refresh token call failed");
+				continue;
+			}
+
+			// Refresh tokens and validate the action again 
+			memset(&refresh_tokens_1_arg, 0, sizeof(refresh_tokens_1_arg));
+			refresh_tokens_1_arg.user_id = strdup(userId.c_str());
+			result_4 = refresh_tokens_1(&refresh_tokens_1_arg, clnt);
+
+			if (result_4 == (ErrorCode *) NULL) {
+				clnt_perror (clnt, "refresh token call failed");
+				exit(1);
+			} 
+
+			client_data.handleError(*result_4);
+			if (*result_4 == ErrorCode::NONE) {
+				result_3 = validate_action_1(&validate_action_1_arg, clnt);
+				if (result_3 == (ErrorCode *) NULL) {
+					clnt_perror (clnt, "validate action call failed");
 					exit(1);
-				} 
-				client_data.handleError(*result_4);
-				if (*result_4 == ErrorCode::NONE) {
-					result_3 = validate_action_1(&validate_action_1_arg, clnt);
-					if (result_3 == (ErrorCode *) NULL) {
-						clnt_perror (clnt, "validate action call failed");
-						exit(1);
-					}
-					client_data.handleError(*result_3);
 				}
+				client_data.handleError(*result_3);
 			}
 		}
     }
