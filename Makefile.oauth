@@ -1,0 +1,44 @@
+# Parameters
+
+CLIENT = oauth_client
+SERVER = oauth_server
+
+OBJECTS_CLNT = oauth_clnt.o oauth_client.o oauth_xdr.o client_data.o
+OBJECTS_SVC = oauth_svc.o oauth_server.o oauth_xdr.o server_data.o
+
+# Compiler flags
+
+CFLAGS += -g -I/usr/include/tirpc
+CXXFLAGS = -g -std=c++17 -I/usr/include/tirpc
+LDLIBS += -lnsl -ltirpc
+
+# Targets
+
+all: $(CLIENT) $(SERVER)
+
+$(CLIENT): $(OBJECTS_CLNT)
+	$(CXX) -o $(CLIENT) $(OBJECTS_CLNT) $(LDLIBS)
+
+$(SERVER): $(OBJECTS_SVC)
+	$(CXX) -o $(SERVER) $(OBJECTS_SVC) $(LDLIBS)
+
+client_data.o: client_data.cpp client_data.h
+	$(CXX) $(CXXFLAGS) -c client_data.cpp -o client_data.o
+
+server_data.o: server_data.cpp server_data.h
+	$(CXX) $(CXXFLAGS) -c server_data.cpp -o server_data.o
+
+oauth_client.o: oauth_client.c client_data.h
+	$(CXX) $(CXXFLAGS) -c oauth_client.c -o oauth_client.o
+
+oauth_server.o: oauth_server.c server_data.h
+	$(CXX) $(CXXFLAGS) -c oauth_server.c -o oauth_server.o
+
+oauth_svc.o: oauth_svc.c server_data.h
+	$(CXX) $(CXXFLAGS) -c oauth_svc.c -o oauth_svc.o
+
+oauth_xdr.o: oauth_xdr.c oauth.h
+	$(CXX) $(CXXFLAGS) -c oauth_xdr.c -o oauth_xdr.o
+
+clean:
+	$(RM) core $(OBJECTS_CLNT) $(OBJECTS_SVC) $(CLIENT) $(SERVER)
