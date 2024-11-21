@@ -23,6 +23,7 @@ enum ErrorCode {
 	REQUEST_DENIED = 5,
 	TOKEN_EXPIRED = 6,
 	USER_NOT_FOUND = 7,
+	SHOULD_REFRESH = 8,
 };
 typedef enum ErrorCode ErrorCode;
 

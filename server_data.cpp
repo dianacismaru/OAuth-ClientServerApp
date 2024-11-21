@@ -68,14 +68,6 @@ bool ServerData::shouldGivePermissions(const string& userId) {
     return true;
 }
 
-char* ServerData::getAccessToken(const string& userId) {
-    return server_data.usersData[userId].accessToken;
-}
-
-int ServerData::getTtl(const string& userId) {
-    return server_data.usersData[userId].ttl;
-}
-
 bool ServerData::isActionPermitted(ActionRequest* argp) {
     auto approvals = server_data.usersData[argp->user_id].approvals;
     char actionCode = strcmp(argp->action, "EXECUTE") ? argp->action[0] : 'X' ;
@@ -88,4 +80,16 @@ bool ServerData::isActionPermitted(ActionRequest* argp) {
     }
     
     return false;
+}
+
+char* ServerData::getAccessToken(const string& userId) {
+    return server_data.usersData[userId].accessToken;
+}
+
+char* ServerData::getRefreshToken(const string& userId) {
+    return server_data.usersData[userId].refreshToken;
+}
+
+int ServerData::getTtl(const string& userId) {
+    return server_data.usersData[userId].ttl;
 }

@@ -66,10 +66,6 @@ oauth_prog_1(char *host, char *filename)
 
 					printf("%s -> %s\n", result_1->auth_token, result_2->access_token);
 					fflush(stdout);
-
-					if (resource == "1") {
-						// request refresh token
-					}
 				}
 			}
 		} else {
@@ -83,7 +79,12 @@ oauth_prog_1(char *host, char *filename)
 			if (result_3 == (ErrorCode *) NULL) {
 				clnt_perror (clnt, "validate action call failed");
 			} else {
-				client_data.handleError(*result_3);
+				if (*result_3 != ErrorCode::SHOULD_REFRESH) {
+					client_data.handleError(*result_3);
+				} else {
+					// call refresh token and then retry validate action
+					printf("SHOULD_REFRESH\n");
+				}
 			}
 		}
     }

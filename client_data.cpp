@@ -39,6 +39,7 @@ void ClientData::handleError(ErrorCode error) {
         case ErrorCode::TOKEN_EXPIRED:
             printf("TOKEN_EXPIRED\n");
             break;
+        case ErrorCode::SHOULD_REFRESH:
         case ErrorCode::NONE:
             break;
         default:

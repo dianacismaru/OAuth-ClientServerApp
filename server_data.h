@@ -36,9 +36,11 @@ public:
     void loadApprovals(const string& filename);
     void setMaxValidity(int maxValidity);
     bool shouldGivePermissions(const string& userId);
-    char* getAccessToken(const string& userId);
-    int getTtl(const string& userId);
     bool isActionPermitted(ActionRequest* argp);
+
+    char* getAccessToken(const string& userId);
+    char* getRefreshToken(const string& userId);
+    int getTtl(const string& userId);
 };
 
 extern ServerData server_data;

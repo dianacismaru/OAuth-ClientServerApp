@@ -6,7 +6,8 @@ enum ErrorCode {
     RESOURCE_NOT_FOUND,
     REQUEST_DENIED,
     TOKEN_EXPIRED,
-    USER_NOT_FOUND
+    USER_NOT_FOUND,
+    SHOULD_REFRESH
 };
 
 struct AuthRequest {
