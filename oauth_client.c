@@ -30,53 +30,54 @@ oauth_prog_1(char *host, char *filename)
 	ClientData client_data;
     client_data.loadRequests(filename);
 
+	// Process each request
 	for (const auto &request : client_data.requests) {
 		string userId = get<0>(request);
         string action = get<1>(request);
         string resource = get<2>(request);
 
-        // printf("\n%s, %s, %s\n",
-        //        userId.c_str(),
-        //        action.c_str(),
-        //        resource.c_str());
-
 		if (action == "REQUEST") {
+			// Request authorization token
 			memset(&request_authorization_1_arg, 0, sizeof(request_authorization_1_arg));
 			request_authorization_1_arg.user_id = strdup(userId.c_str());
 			result_1 = request_authorization_1(&request_authorization_1_arg, clnt);
+
 			if (result_1 == (AuthResponse *) NULL) {
 				clnt_perror (clnt, "authz call failed");
-			} else {
-				client_data.handleError(result_1->status);
-				if (!strcmp(result_1->auth_token, "")) {
-					continue;
-				}
-
-				memset(&request_access_token_1_arg, 0, sizeof(request_access_token_1_arg));
-				request_access_token_1_arg.user_id = strdup(userId.c_str());
-				request_access_token_1_arg.auth_token = strdup(result_1->auth_token);
-				request_access_token_1_arg.refresh = atoi(resource.c_str());
-
-				result_2 = request_access_token_1(&request_access_token_1_arg, clnt);
-				if (result_2 == (AccessResponse *) NULL) {
-					clnt_perror (clnt, "access call failed");
-				} else {
-					client_data.handleError(result_2->status);
-					if (!strcmp(result_2->access_token, "")) {
-						continue;
-					}
-
-					if (resource == "0") {
-						printf("%s -> %s\n", result_1->auth_token, result_2->access_token);
-						fflush(stdout);
-					} else {
-						printf("%s -> %s,%s\n", result_1->auth_token, result_2->access_token, result_2->refresh_token);
-						fflush(stdout);
-					}
-				}
+				exit(1);
 			}
+
+			client_data.handleError(result_1->status);
+			if (result_1->status != ErrorCode::NONE) {
+				continue;
+			}
+
+			// Request access token and refresh token if needed
+			memset(&request_access_token_1_arg, 0, sizeof(request_access_token_1_arg));
+			request_access_token_1_arg.user_id = strdup(userId.c_str());
+			request_access_token_1_arg.auth_token = strdup(result_1->auth_token);
+			request_access_token_1_arg.refresh = atoi(resource.c_str());
+
+			result_2 = request_access_token_1(&request_access_token_1_arg, clnt);
+			if (result_2 == (AccessResponse *) NULL) {
+				clnt_perror (clnt, "access call failed");
+				exit(1);
+			} 
+
+			client_data.handleError(result_2->status);
+			if (result_2->status != ErrorCode::NONE) {
+				continue;
+			}
+
+			if (resource == "0") {
+				printf("%s -> %s\n", result_1->auth_token, result_2->access_token);
+			} else {
+				printf("%s -> %s,%s\n", result_1->auth_token, result_2->access_token, result_2->refresh_token);
+			}
+			fflush(stdout);
+
 		} else {
-			// make action and decrease availability
+			// Validate action
 			memset(&validate_action_1_arg, 0, sizeof(validate_action_1_arg));
 			validate_action_1_arg.user_id = strdup(userId.c_str());
 			validate_action_1_arg.action = strdup(action.c_str());
@@ -85,28 +86,28 @@ oauth_prog_1(char *host, char *filename)
 			result_3 = validate_action_1(&validate_action_1_arg, clnt);
 			if (result_3 == (ErrorCode *) NULL) {
 				clnt_perror (clnt, "validate action call failed");
-			} else {
-				if (*result_3 != ErrorCode::SHOULD_REFRESH) {
-					client_data.handleError(*result_3);
-				} else {
-					// call refresh token and then retry validate action
-					memset(&refresh_tokens_1_arg, 0, sizeof(refresh_tokens_1_arg));
-					refresh_tokens_1_arg.user_id = strdup(userId.c_str());
-					result_4 = refresh_tokens_1(&refresh_tokens_1_arg, clnt);
-					if (result_4 == (ErrorCode *) NULL) {
-						clnt_perror (clnt, "refresh token call failed");
-					} else {
-						client_data.handleError(*result_4);
-						if (*result_4 == ErrorCode::NONE) {
-							result_3 = validate_action_1(&validate_action_1_arg, clnt);
-							if (result_3 == (ErrorCode *) NULL) {
-								clnt_perror (clnt, "validate action call failed");
-							} else {
-								client_data.handleError(*result_3);
-							}
-						}
-					}
+				exit(1);
+			} 
 
+			if (*result_3 != ErrorCode::SHOULD_REFRESH) {
+				client_data.handleError(*result_3);
+			} else {
+				// call refresh token and then retry validate action
+				memset(&refresh_tokens_1_arg, 0, sizeof(refresh_tokens_1_arg));
+				refresh_tokens_1_arg.user_id = strdup(userId.c_str());
+				result_4 = refresh_tokens_1(&refresh_tokens_1_arg, clnt);
+				if (result_4 == (ErrorCode *) NULL) {
+					clnt_perror (clnt, "refresh token call failed");
+					exit(1);
+				} 
+				client_data.handleError(*result_4);
+				if (*result_4 == ErrorCode::NONE) {
+					result_3 = validate_action_1(&validate_action_1_arg, clnt);
+					if (result_3 == (ErrorCode *) NULL) {
+						clnt_perror (clnt, "validate action call failed");
+						exit(1);
+					}
+					client_data.handleError(*result_3);
 				}
 			}
 		}

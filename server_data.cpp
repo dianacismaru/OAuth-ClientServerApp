@@ -56,11 +56,6 @@ bool ServerData::shouldGivePermissions(const string& userId) {
     approvals.pop_front();
     server_data.usersData[userId].approvals = approval; 
 
-    // cout << "Approvals for " << userId << endl;
-    // for (const auto& [key, value] : approval) {
-    //     cout << key << " -> " << value << endl;
-    // }
-
     if (approval.find("*") != approval.end()) {
         return false;
     }
