@@ -40,6 +40,7 @@ typedef struct AuthResponse AuthResponse;
 struct AccessRequest {
 	char *user_id;
 	char *auth_token;
+	int refresh;
 };
 typedef struct AccessRequest AccessRequest;
 

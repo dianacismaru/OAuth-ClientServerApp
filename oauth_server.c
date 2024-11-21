@@ -46,6 +46,7 @@ request_access_token_1_svc(AccessRequest *argp, struct svc_req *rqstp)
 {
 	static AccessResponse  result;
 	memset(&result, 0, sizeof(result));
+	printf("refresh = %d\n", argp->refresh);
 
 	char* authorizationToken = server_data.usersData[argp->user_id].authorizationToken;
 	if (!server_data.shouldGivePermissions(argp->user_id)) {
@@ -72,7 +73,7 @@ request_access_token_1_svc(AccessRequest *argp, struct svc_req *rqstp)
 	} else {
 		fprintf(stderr, "[ERR] Server failed to allocate memory for auth_token\n");
 	}
-
+	
 	// TODO continue with refresh token
 	if (true) {
 		result.refresh_token = (char*)malloc(1);

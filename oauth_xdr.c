@@ -46,6 +46,8 @@ xdr_AccessRequest (XDR *xdrs, AccessRequest *objp)
 		 return FALSE;
 	 if (!xdr_string (xdrs, &objp->auth_token, ~0))
 		 return FALSE;
+	 if (!xdr_int (xdrs, &objp->refresh))
+		 return FALSE;
 	return TRUE;
 }
 

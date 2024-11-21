@@ -53,6 +53,7 @@ oauth_prog_1(char *host, char *filename)
 				memset(&request_access_token_1_arg, 0, sizeof(request_access_token_1_arg));
 				request_access_token_1_arg.user_id = strdup(userId.c_str());
 				request_access_token_1_arg.auth_token = strdup(result_1->auth_token);
+				request_access_token_1_arg.refresh = atoi(resource.c_str());
 
 				result_2 = request_access_token_1(&request_access_token_1_arg, clnt);
 				if (result_2 == (AccessResponse *) NULL) {

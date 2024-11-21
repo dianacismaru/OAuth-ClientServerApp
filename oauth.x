@@ -21,6 +21,7 @@ struct AuthResponse {
 struct AccessRequest {
     string user_id<>;
     string auth_token<>;
+    int refresh;
 };
 
 struct AccessResponse {
