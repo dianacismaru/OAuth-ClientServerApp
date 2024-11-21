@@ -175,7 +175,7 @@ refresh_tokens_1_svc(AuthRequest *argp, struct svc_req *rqstp)
 		fprintf(stderr, "[ERR] Server failed to allocate memory for access_token\n");
 		exit(1);
 	}
-
+	
 	server_data.users_data[argp->user_id].access_token = new_access_token;
 	server_data.users_data[argp->user_id].ttl = server_data.max_ttl;
 	printf("  AccessToken = %s\n", new_access_token);

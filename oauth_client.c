@@ -49,6 +49,7 @@ oauth_prog_1(char *host, char *filename)
 
 			client_data.handle_error(result_1->status);
 			if (result_1->status != ErrorCode::NONE) {
+				free(result_1->auth_token);
 				continue;
 			}
 
@@ -66,6 +67,9 @@ oauth_prog_1(char *host, char *filename)
 
 			client_data.handle_error(result_2->status);
 			if (result_2->status != ErrorCode::NONE) {
+				free(result_1->auth_token);
+				free(result_2->access_token);
+				free(result_2->refresh_token);
 				continue;
 			}
 
@@ -75,6 +79,10 @@ oauth_prog_1(char *host, char *filename)
 				printf("%s -> %s,%s\n", result_1->auth_token, result_2->access_token, result_2->refresh_token);
 			}
 			fflush(stdout);
+
+			free(result_1->auth_token);
+			free(result_2->access_token);
+			free(result_2->refresh_token);
 
 		} else {
 			// Validate action
