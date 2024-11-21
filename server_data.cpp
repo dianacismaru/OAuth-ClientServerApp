@@ -1,6 +1,7 @@
 #include "server_data.h"
 
-void ServerData::loadUsers(const string& filename) {
+// Load users from a file
+void ServerData::load_users(const string& filename) {
     ifstream file(filename);
     int userCount;
     file >> userCount;
@@ -12,7 +13,8 @@ void ServerData::loadUsers(const string& filename) {
     file.close();
 }
 
-void ServerData::loadResources(const string& filename) {
+// Load resources from a file
+void ServerData::load_resources(const string& filename) {
     ifstream file(filename);
     int resourceCount;
     file >> resourceCount;
@@ -24,7 +26,8 @@ void ServerData::loadResources(const string& filename) {
     file.close();
 }
 
-void ServerData::loadApprovals(const string& filename) {
+// Load approvals from a file
+void ServerData::load_approvals(const string& filename) {
     ifstream file(filename);
     string line;
 
@@ -47,14 +50,17 @@ void ServerData::loadApprovals(const string& filename) {
     file.close();
 }
 
-void ServerData::setMaxValidity(int maxValidity) {
-    this->maxValidity = maxValidity;
+// Set the maximum time-to-live for a token
+void ServerData::set_max_ttl(int max_ttl) {
+    this->max_ttl = max_ttl;
 }
 
-bool ServerData::shouldGivePermissions(const string& userId) {
+// Check if access should be granted to a user by checking
+// the next approval in the queue
+bool ServerData::should_grant_access(const string& userId) {
     unordered_map<string, string> approval = approvals.front();
     approvals.pop_front();
-    server_data.usersData[userId].approvals = approval; 
+    server_data.users_data[userId].approvals = approval; 
 
     if (approval.find("*") != approval.end()) {
         return false;
@@ -63,8 +69,9 @@ bool ServerData::shouldGivePermissions(const string& userId) {
     return true;
 }
 
-bool ServerData::isActionPermitted(ActionRequest* argp) {
-    auto approvals = server_data.usersData[argp->user_id].approvals;
+// Check if an action is permitted for a user
+bool ServerData::is_action_permitted(ActionRequest* argp) {
+    auto approvals = server_data.users_data[argp->user_id].approvals;
     char actionCode = strcmp(argp->action, "EXECUTE") ? argp->action[0] : 'X' ;
 
     // Get permissions for the resource
@@ -77,14 +84,17 @@ bool ServerData::isActionPermitted(ActionRequest* argp) {
     return false;
 }
 
-char* ServerData::getAccessToken(const string& userId) {
-    return server_data.usersData[userId].accessToken;
+// Retrieve the access token for a user
+char* ServerData::get_access_token(const string& userId) {
+    return server_data.users_data[userId].access_token;
 }
 
-char* ServerData::getRefreshToken(const string& userId) {
-    return server_data.usersData[userId].refreshToken;
+// Retrieve the refresh token for a user
+char* ServerData::get_refresh_token(const string& userId) {
+    return server_data.users_data[userId].refresh_token;
 }
 
-int ServerData::getTtl(const string& userId) {
-    return server_data.usersData[userId].ttl;
+// Retrieve the time-to-live for a user's access token
+int ServerData::get_ttl(const string& userId) {
+    return server_data.users_data[userId].ttl;
 }

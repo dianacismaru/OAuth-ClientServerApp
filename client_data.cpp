@@ -1,6 +1,7 @@
 #include "client_data.h"
 
-void ClientData::loadRequests(const string& filename) {
+// Load requests from a file
+void ClientData::load_requests(const string& filename) {
     ifstream file(filename);
     string line;
 
@@ -16,7 +17,8 @@ void ClientData::loadRequests(const string& filename) {
     file.close();
 }
 
-void ClientData::handleError(ErrorCode error) {
+// Handle error codes
+void ClientData::handle_error(ErrorCode error) {
     switch (error) {
         case ErrorCode::USER_NOT_FOUND:
             printf("USER_NOT_FOUND\n");

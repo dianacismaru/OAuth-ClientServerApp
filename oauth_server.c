@@ -38,7 +38,7 @@ request_authorization_1_svc(AuthRequest *argp, struct svc_req *rqstp)
 	}
 
 	// Save the authorization token in the server's database
-	server_data.usersData[argp->user_id].authorizationToken = result.auth_token;
+	server_data.users_data[argp->user_id].auth_token = result.auth_token;
 	printf("  RequestToken = %s\n", result.auth_token);
 	fflush(stdout);
 	result.status = NONE;
@@ -52,7 +52,7 @@ request_access_token_1_svc(AccessRequest *argp, struct svc_req *rqstp)
 	memset(&result, 0, sizeof(result));
 
 	// Check if user has approved the request
-	if (!server_data.shouldGivePermissions(argp->user_id)) {
+	if (!server_data.should_grant_access(argp->user_id)) {
 		result.status = REQUEST_DENIED;
 		result.ttl = -1;
 		result.access_token = (char*)malloc(1);
@@ -74,12 +74,12 @@ request_access_token_1_svc(AccessRequest *argp, struct svc_req *rqstp)
 		exit(1);
 	}
 
-	server_data.usersData[argp->user_id].accessToken = result.access_token;
-	server_data.usersData[argp->user_id].ttl = server_data.maxValidity;
+	server_data.users_data[argp->user_id].access_token = result.access_token;
+	server_data.users_data[argp->user_id].ttl = server_data.max_ttl;
 	printf("  AccessToken = %s\n", result.access_token);
 	fflush(stdout);
 
-	result.ttl = server_data.maxValidity;
+	result.ttl = server_data.max_ttl;
 	result.status = NONE;
 
 	if (!argp->refresh) {
@@ -93,7 +93,7 @@ request_access_token_1_svc(AccessRequest *argp, struct svc_req *rqstp)
 			exit(1);
 		}
 
-		server_data.usersData[argp->user_id].refreshToken = result.refresh_token;
+		server_data.users_data[argp->user_id].refresh_token = result.refresh_token;
 		printf("  RefreshToken = %s\n", result.refresh_token);
 		fflush(stdout);
 	}
@@ -107,11 +107,11 @@ validate_action_1_svc(ActionRequest *argp, struct svc_req *rqstp)
 	static ErrorCode  result;
 	memset(&result, 0, sizeof(result));
 
-	char* accessToken = server_data.getAccessToken(argp->user_id);
-	int ttl = server_data.getTtl(argp->user_id);
+	char* access_token = server_data.get_access_token(argp->user_id);
+	int ttl = server_data.get_ttl(argp->user_id);
 
 	// Check if user has an access token
-	if (!accessToken || !strcmp(accessToken, "")) {
+	if (!access_token || !strcmp(access_token, "")) {
 		result = PERMISSION_DENIED;
 		printf("DENY (%s,%s,,%d)\n", argp->action, argp->resource, ttl);
 		fflush(stdout);
@@ -121,8 +121,8 @@ validate_action_1_svc(ActionRequest *argp, struct svc_req *rqstp)
 	// Check if token has expired
 	if (ttl == 0) {
 		// Check if user has a refresh token
-		char *refreshToken = server_data.getRefreshToken(argp->user_id);
-		if (refreshToken && strcmp(refreshToken, "")) {
+		char *refresh_token = server_data.get_refresh_token(argp->user_id);
+		if (refresh_token && strcmp(refresh_token, "")) {
 			// Send a request to refresh the token
 			result = SHOULD_REFRESH;
 			return &result;
@@ -137,26 +137,26 @@ validate_action_1_svc(ActionRequest *argp, struct svc_req *rqstp)
 
 	// Decrement TTL
 	ttl--;
-	server_data.usersData[argp->user_id].ttl = ttl;
+	server_data.users_data[argp->user_id].ttl = ttl;
 
 	// Check if resource exists
 	if (server_data.resources.find(argp->resource) == server_data.resources.end()) {
 		result = RESOURCE_NOT_FOUND;
-		printf("DENY (%s,%s,%s,%d)\n", argp->action, argp->resource, accessToken, ttl);
+		printf("DENY (%s,%s,%s,%d)\n", argp->action, argp->resource, access_token, ttl);
 		fflush(stdout);
 		return &result;
 	}
 
 	// Check if action is permitted on the resource
-	if (!server_data.isActionPermitted(argp)) {
+	if (!server_data.is_action_permitted(argp)) {
 		result = OPERATION_NOT_PERMITTED;
-		printf("DENY (%s,%s,%s,%d)\n", argp->action, argp->resource, accessToken, ttl);
+		printf("DENY (%s,%s,%s,%d)\n", argp->action, argp->resource, access_token, ttl);
 		fflush(stdout);
 		return &result;
 	}
 
 	// Grant permission
-	printf("PERMIT (%s,%s,%s,%d)\n", argp->action, argp->resource, accessToken, ttl);
+	printf("PERMIT (%s,%s,%s,%d)\n", argp->action, argp->resource, access_token, ttl);
 	fflush(stdout);
 	result = PERMISSION_GRANTED;
 	return &result;
@@ -170,14 +170,14 @@ refresh_tokens_1_svc(AuthRequest *argp, struct svc_req *rqstp)
 	memset(&result, 0, sizeof(result));
 	printf("BEGIN %s AUTHZ REFRESH\n", argp->user_id);
 
-	char *new_access_token = generate_access_token(server_data.usersData[argp->user_id].refreshToken);
+	char *new_access_token = generate_access_token(server_data.users_data[argp->user_id].refresh_token);
 	if (!new_access_token) {
 		fprintf(stderr, "[ERR] Server failed to allocate memory for access_token\n");
 		exit(1);
 	}
 
-	server_data.usersData[argp->user_id].accessToken = new_access_token;
-	server_data.usersData[argp->user_id].ttl = server_data.maxValidity;
+	server_data.users_data[argp->user_id].access_token = new_access_token;
+	server_data.users_data[argp->user_id].ttl = server_data.max_ttl;
 	printf("  AccessToken = %s\n", new_access_token);
 	fflush(stdout);
 
@@ -188,7 +188,7 @@ refresh_tokens_1_svc(AuthRequest *argp, struct svc_req *rqstp)
 		exit(1);
 	}
 
-	server_data.usersData[argp->user_id].refreshToken = new_refresh_token;
+	server_data.users_data[argp->user_id].refresh_token = new_refresh_token;
 	printf("  RefreshToken = %s\n", new_refresh_token);
 	fflush(stdout);
 	result = NONE;

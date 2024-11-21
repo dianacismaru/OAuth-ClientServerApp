@@ -14,10 +14,11 @@ using namespace std;
 
 class ClientData {
 public:
+    // Tuple of (user_id, action, resource) from a request
     vector<tuple<string, string, string>> requests;
 
-    void loadRequests(const string& filename);
-    void handleError(ErrorCode error);
+    void load_requests(const string& filename);
+    void handle_error(ErrorCode error);
 };
 
 

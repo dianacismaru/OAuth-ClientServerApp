@@ -28,7 +28,7 @@ oauth_prog_1(char *host, char *filename)
 	}
 #endif	/* DEBUG */
 	ClientData client_data;
-    client_data.loadRequests(filename);
+    client_data.load_requests(filename);
 
 	// Process each request
 	for (const auto &request : client_data.requests) {
@@ -47,7 +47,7 @@ oauth_prog_1(char *host, char *filename)
 				exit(1);
 			}
 
-			client_data.handleError(result_1->status);
+			client_data.handle_error(result_1->status);
 			if (result_1->status != ErrorCode::NONE) {
 				continue;
 			}
@@ -64,7 +64,7 @@ oauth_prog_1(char *host, char *filename)
 				exit(1);
 			} 
 
-			client_data.handleError(result_2->status);
+			client_data.handle_error(result_2->status);
 			if (result_2->status != ErrorCode::NONE) {
 				continue;
 			}
@@ -90,7 +90,7 @@ oauth_prog_1(char *host, char *filename)
 			} 
 
 			if (*result_3 != ErrorCode::SHOULD_REFRESH) {
-				client_data.handleError(*result_3);
+				client_data.handle_error(*result_3);
 				continue;
 			}
 
@@ -104,14 +104,14 @@ oauth_prog_1(char *host, char *filename)
 				exit(1);
 			} 
 
-			client_data.handleError(*result_4);
+			client_data.handle_error(*result_4);
 			if (*result_4 == ErrorCode::NONE) {
 				result_3 = validate_action_1(&validate_action_1_arg, clnt);
 				if (result_3 == (ErrorCode *) NULL) {
 					clnt_perror (clnt, "validate action call failed");
 					exit(1);
 				}
-				client_data.handleError(*result_3);
+				client_data.handle_error(*result_3);
 			}
 		}
     }
